@@ -1,8 +1,15 @@
+from __future__ import print_function
+from __future__ import absolute_import
+from future.builtins import zip
+from future.builtins import str
+from future import standard_library
+standard_library.install_hooks()
+from future.builtins import range
 import simtk.openmm.app as app
 from simtk.openmm.app.internal.pdbstructure import PdbStructure
 import simtk.unit as unit
-from pdbfixer import PDBFixer, substitutions, proteinResidues, dnaResidues, rnaResidues
-import uiserver
+from .pdbfixer import PDBFixer, substitutions, proteinResidues, dnaResidues, rnaResidues
+from . import uiserver
 import webbrowser
 import os.path
 import gzip
@@ -12,8 +19,8 @@ try:
     from urllib.request import urlopen
     from io import StringIO
 except:
-    from urllib2 import urlopen
-    from cStringIO import StringIO
+    from urllib.request import urlopen
+    from io import StringIO
 
 def loadHtmlFile(name):
     htmlPath = os.path.join(os.path.dirname(__file__), 'html')
@@ -182,7 +189,7 @@ def displayConvertResiduesPage():
 def displayMissingAtomsPage():
     uiserver.setCallback(missingAtomsPageCallback)
     fixer.findMissingAtoms()
-    allResidues = list(set(fixer.missingAtoms.keys()).union(fixer.missingTerminals.keys()))
+    allResidues = list(set(fixer.missingAtoms.keys()).union(list(fixer.missingTerminals.keys())))
     allResidues.sort(key=lambda x: x.index)
     if len(allResidues) == 0:
         fixer.addMissingAtoms()

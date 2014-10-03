@@ -1,3 +1,7 @@
+from future.builtins import bytes
+from future.builtins import str
+from future import standard_library
+standard_library.install_hooks()
 from threading import Thread
 import cgi
 import sys
@@ -6,9 +10,9 @@ try:
     from http.server import HTTPServer, BaseHTTPRequestHandler
     from urllib.parse import parse_qs
 except:
-    from SocketServer import ThreadingMixIn
-    from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
-    from urlparse import parse_qs
+    from socketserver import ThreadingMixIn
+    from future.standard_library.http.server as http_server import HTTPServer, BaseHTTPRequestHandler
+    from future.standard_library.urllib.parse as urllib_parse import parse_qs
 
 class _Handler(BaseHTTPRequestHandler):
     def do_GET(self):

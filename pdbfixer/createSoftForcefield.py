@@ -30,6 +30,8 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 from __future__ import print_function
+from future.builtins import next
+from future.builtins import range
 __author__ = "Peter Eastman"
 __version__ = "1.0"
 
@@ -62,7 +64,7 @@ print(' </AtomTypes>')
 # Print the residue templates.
 
 print(' <Residues>')
-for template in forcefield._templates.values():
+for template in list(forcefield._templates.values()):
     print('  <Residue name="%s">' % template.name)
     atomIndex = {}
     for i, atom in enumerate(template.atoms):

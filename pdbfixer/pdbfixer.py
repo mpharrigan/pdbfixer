@@ -28,6 +28,15 @@ DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
 OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
+from __future__ import division
+from __future__ import absolute_import
+from future.builtins import next
+from future.builtins import zip
+from future import standard_library
+standard_library.install_hooks()
+from future.builtins import range
+from future.builtins import object
+from past.utils import old_div
 __author__ = "Peter Eastman"
 __version__ = "1.0"
 
@@ -48,7 +57,7 @@ import math
 if sys.version_info >= (3,0):
     from urllib.request import urlopen
 else:
-    from urllib2 import urlopen
+    from urllib.request import urlopen
         
 substitutions = {
     '2AS':'ASP', '3AH':'HIS', '5HP':'GLU', 'ACL':'ARG', 'AGM':'ARG', 'AIB':'ALA', 'ALM':'ALA', 'ALO':'THR', 'ALY':'LYS', 'ARM':'ARG',
@@ -97,8 +106,8 @@ def _overlayPoints(points1, points2):
     
     # Compute centroids.
     
-    center1 = unit.sum(points1)/float(len(points1))
-    center2 = unit.sum(points2)/float(len(points2))
+    center1 = old_div(unit.sum(points1),float(len(points1)))
+    center2 = old_div(unit.sum(points2),float(len(points2)))
     
     # Compute R matrix.
     
@@ -203,7 +212,7 @@ class PDBFixer(object):
         self.pdb = app.PDBFile(structure)
         self.topology = self.pdb.topology
         self.positions = self.pdb.positions
-        self.centroid = unit.sum(self.positions)/len(self.positions)
+        self.centroid = old_div(unit.sum(self.positions),len(self.positions))
         self.structureChains = list(self.structure.iter_chains())
         
         # Load the templates.
@@ -351,7 +360,7 @@ class PDBFixer(object):
     
     def _computeResidueCenter(self, residue):
         """Compute the centroid of a residue."""
-        return unit.sum([self.pdb.positions[atom.index] for atom in residue.atoms()])/len(list(residue.atoms()))
+        return old_div(unit.sum([self.pdb.positions[atom.index] for atom in residue.atoms()]),len(list(residue.atoms())))
     
     def _addMissingResiduesToChain(self, chain, residueNames, startPosition, endPosition, orientTo, newAtoms, newPositions):
         """Add a series of residues to a chain."""
@@ -623,15 +632,15 @@ class PDBFixer(object):
             index = resSeq_to_index[resSeq]
             
             if index not in index_to_old_name:
-                raise(KeyError("Cannot find index %d in system!" % index))
+                raise KeyError
             
             if index_to_old_name[index] != old_name:
-                raise(ValueError("You asked to mutate %s %d, but that residue is actually %s!" % (old_name, index, index_to_old_name[index])))
+                raise ValueError
             
             try:
                 template = self.templates[new_name]
             except KeyError:
-                raise(KeyError("Cannot find residue %s in template library!" % new_name))
+                raise KeyError
             
             index_to_new_residues[index] = new_name
             
@@ -754,7 +763,7 @@ class PDBFixer(object):
             
             # Set any previously existing atoms to be massless, they so won't move.
             
-            for atom in existingAtomMap.values():
+            for atom in list(existingAtomMap.values()):
                 system.setParticleMass(atom.index, 0.0)
             
             # If any heavy atoms were omitted, add them back to avoid steric clashes.
@@ -768,11 +777,11 @@ class PDBFixer(object):
             
             # For efficiency, only compute interactions that involve a new atom.
             
-            nonbonded.addInteractionGroup([atom.index for atom in newAtoms], range(system.getNumParticles()))
+            nonbonded.addInteractionGroup([atom.index for atom in newAtoms], list(range(system.getNumParticles())))
             
             # Do an energy minimization.
             
-            integrator = mm.LangevinIntegrator(300*unit.kelvin, 10/unit.picosecond, 5*unit.femtosecond)
+            integrator = mm.LangevinIntegrator(300*unit.kelvin, old_div(10,unit.picosecond), 5*unit.femtosecond)
             context = mm.Context(system, integrator)
             context.setPositions(newPositions)
             mm.LocalEnergyMinimizer.minimize(context)
@@ -991,7 +1000,7 @@ def main():
     if len(sys.argv) < 2:
         # Display the UI.
         
-        import ui
+        from . import ui
         ui.launchUI()
     else:
         # Run in command line mode.
